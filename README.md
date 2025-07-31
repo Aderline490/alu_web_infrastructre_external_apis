@@ -136,7 +136,7 @@ docker run -d -e API_KEY=$API_KEY -p 8080:8080 <dockerhub-username>/stock-tracke
 ---
 
 ## 📹 Demo Video
-👉 [Demo Video Link Here](#) (Upload to YouTube/Vimeo and paste the link)  
+[![Watch the video](https://img.youtube.com/vi/8NMlc_XixJc/0.jpg)](https://youtu.be/8NMlc_XixJc)
 
 ---
 
