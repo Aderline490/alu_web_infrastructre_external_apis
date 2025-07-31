@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Portfolio Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .add-stock-card, .portfolio-summary {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2d3748;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-refresh {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            margin-bottom: 20px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        .summary-item {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .summary-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .summary-label {
+            font-size: 0.9rem;
+            color: #718096;
+            font-weight: 500;
+        }
+
+        .positive {
+            color: #38a169;
+        }
+
+        .negative {
+            color: #e53e3e;
+        }
+
+        .portfolio-table {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            overflow: hidden;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            font-weight: 500;
+        }
+
+        .symbol {
+            font-weight: 700;
+            color: #2d3748;
+            font-size: 1.1rem;
+        }
+
+        .price {
+            font-weight: 600;
+        }
+
+        .change-positive {
+            color: #38a169;
+            font-weight: 600;
+        }
+
+        .change-negative {
+            color: #e53e3e;
+            font-weight: 600;
+        }
+
+        .delete-btn {
+            background: #e53e3e;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .delete-btn:hover {
+            background: #c53030;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+            font-style: italic;
+        }
+
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #feb2b2;
+        }
+
+        .success {
+            background: #c6f6d5;
+            color: #276749;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #9ae6b4;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #718096;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #4a5568;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            table {
+                font-size: 0.9rem;
+            }
+            
+            th, td {
+                padding: 12px 8px;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📈 Stock Portfolio Tracker</h1>
+            <p>Monitor your investments with real-time market data</p>
+        </div>
+
+        <div class="dashboard">
+            <div class="add-stock-card">
+                <h2 class="card-title">Add New Stock</h2>
+                <div id="message"></div>
+                <form id="addStockForm">
+                    <div class="form-group">
+                        <label for="symbol">Stock Symbol</label>
+                        <input type="text" id="symbol" name="symbol" placeholder="e.g., AAPL, GOOGL, TSLA" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="shares">Number of Shares</label>
+                        <input type="number" id="shares" name="shares" step="0.01" min="0.01" placeholder="e.g., 10" required>
+                    </div>
+                    <button type="submit" class="btn">Add to Portfolio</button>
+                </form>
+            </div>
+
+            <div class="portfolio-summary">
+                <h2 class="card-title">Portfolio Summary</h2>
+                <button id="refreshBtn" class="btn btn-refresh">🔄 Refresh Prices</button>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <div class="summary-value" id="totalValue">$0.00</div>
+                        <div class="summary-label">Total Value</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-value" id="totalGainLoss">$0.00</div>
+                        <div class="summary-label">Total Gain/Loss</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-value" id="totalGainLossPercent">0.00%</div>
+                        <div class="summary-label">Total Return</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-value" id="stockCount">0</div>
+                        <div class="summary-label">Holdings</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="portfolio-table">
+            <h2 class="card-title">Your Portfolio</h2>
+            <div class="table-container">
+                <table id="portfolioTable">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Shares</th>
+                            <th>Purchase Price</th>
+                            <th>Current Price</th>
+                            <th>Total Value</th>
+                            <th>Gain/Loss</th>
+                            <th>Return %</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="portfolioBody">
+                        <tr>
+                            <td colspan="8" class="loading">Loading portfolio...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class StockPortfolio {
+            constructor() {
+                this.portfolio = [];
+                this.init();
+            }
+
+            init() {
+                this.bindEvents();
+                this.loadPortfolio();
+            }
+
+            bindEvents() {
+                document.getElementById('addStockForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.addStock();
+                });
+
+                document.getElementById('refreshBtn').addEventListener('click', () => {
+                    this.refreshPortfolio();
+                });
+            }
+
+            async addStock() {
+                const form = document.getElementById('addStockForm');
+                const formData = new FormData(form);
+                const symbol = formData.get('symbol').toUpperCase().trim();
+                const shares = parseFloat(formData.get('shares'));
+
+                if (!symbol || !shares || shares <= 0) {
+                    this.showMessage('Please enter a valid symbol and number of shares', 'error');
+                    return;
+                }
+
+                try {
+                    this.showMessage('Adding stock to portfolio...', 'loading');
+                    
+                    const response = await fetch('/api/portfolio', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ symbol, shares }),
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error);
+                    }
+
+                    this.portfolio.push(data);
+                    this.updatePortfolioDisplay();
+                    this.updateSummary();
+                    form.reset();
+                    this.showMessage(`Successfully added ${symbol} to your portfolio!`, 'success');
+                } catch (error) {
+                    this.showMessage(error.message, 'error');
+                }
+            }
+
+            async loadPortfolio() {
+                try {
+                    const response = await fetch('/api/portfolio');
+                    this.portfolio = await response.json();
+                    this.updatePortfolioDisplay();
+                    this.updateSummary();
+                } catch (error) {
+                    this.showMessage('Error loading portfolio', 'error');
+                }
+            }
+
+            async refreshPortfolio() {
+                if (this.portfolio.length === 0) {
+                    this.showMessage('No stocks in portfolio to refresh', 'error');
+                    return;
+                }
+
+                try {
+                    document.getElementById('refreshBtn').textContent = '🔄 Refreshing...';
+                    document.getElementById('refreshBtn').disabled = true;
+                    
+                    const response = await fetch('/api/portfolio/refresh', {
+                        method: 'PUT',
+                    });
+
+                    this.portfolio = await response.json();
+                    this.updatePortfolioDisplay();
+                    this.updateSummary();
+                    this.showMessage('Portfolio refreshed successfully!', 'success');
+                } catch (error) {
+                    this.showMessage('Error refreshing portfolio', 'error');
+                } finally {
+                    document.getElementById('refreshBtn').textContent = '🔄 Refresh Prices';
+                    document.getElementById('refreshBtn').disabled = false;
+                }
+            }
+
+            async removeStock(id) {
+                if (!confirm('Are you sure you want to remove this stock from your portfolio?')) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/api/portfolio/${id}`, {
+                        method: 'DELETE',
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to remove stock');
+                    }
+
+                    this.portfolio = this.portfolio.filter(stock => stock.id !== id);
+                    this.updatePortfolioDisplay();
+                    this.updateSummary();
+                    this.showMessage('Stock removed from portfolio', 'success');
+                } catch (error) {
+                    this.showMessage('Error removing stock', 'error');
+                }
+            }
+
+            updatePortfolioDisplay() {
+                const tbody = document.getElementById('portfolioBody');
+                
+                if (this.portfolio.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="8" class="empty-state">
+                                <h3>No stocks in your portfolio</h3>
+                                <p>Add your first stock using the form above</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = this.portfolio.map(stock => `
+                    <tr class="fade-in">
+                        <td class="symbol">${stock.symbol}</td>
+                        <td>${stock.shares}</td>
+                        <td class="price">$${stock.purchasePrice.toFixed(2)}</td>
+                        <td class="price">$${stock.currentPrice.toFixed(2)}</td>
+                        <td class="price">$${stock.totalValue.toFixed(2)}</td>
+                        <td class="${stock.gainLoss >= 0 ? 'change-positive' : 'change-negative'}">
+                            $${stock.gainLoss.toFixed(2)}
+                        </td>
+                        <td class="${stock.gainLossPercent >= 0 ? 'change-positive' : 'change-negative'}">
+                            ${stock.gainLossPercent.toFixed(2)}%
+                        </td>
+                        <td>
+                            <button class="delete-btn" onclick="app.removeStock(${stock.id})">
+                                Remove
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            updateSummary() {
+                const totalValue = this.portfolio.reduce((sum, stock) => sum + stock.totalValue, 0);
+                const totalGainLoss = this.portfolio.reduce((sum, stock) => sum + stock.gainLoss, 0);
+                const totalInvestment = this.portfolio.reduce((sum, stock) => sum + (stock.purchasePrice * stock.shares), 0);
+                const totalGainLossPercent = totalInvestment > 0 ? (totalGainLoss / totalInvestment) * 100 : 0;
+
+                document.getElementById('totalValue').textContent = `$${totalValue.toFixed(2)}`;
+                document.getElementById('totalGainLoss').textContent = `$${totalGainLoss.toFixed(2)}`;
+                document.getElementById('totalGainLoss').className = `summary-value ${totalGainLoss >= 0 ? 'positive' : 'negative'}`;
+                document.getElementById('totalGainLossPercent').textContent = `${totalGainLossPercent.toFixed(2)}%`;
+                document.getElementById('totalGainLossPercent').className = `summary-value ${totalGainLossPercent >= 0 ? 'positive' : 'negative'}`;
+                document.getElementById('stockCount').textContent = this.portfolio.length;
+            }
+
+            showMessage(message, type) {
+                const messageDiv = document.getElementById('message');
+                messageDiv.innerHTML = `<div class="${type}">${message}</div>`;
+                
+                if (type === 'success' || type === 'error') {
+                    setTimeout(() => {
+                        messageDiv.innerHTML = '';
+                    }, 5000);
+                }
+                
+                if (type === 'loading') {
+                    // Loading messages don't auto-clear
+                    return;
+                }
+                
+                if (type !== 'loading') {
+                    messageDiv.innerHTML = `<div class="${type}">${message}</div>`;
+                }
+            }
+
+            formatCurrency(amount) {
+                return new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD'
+                }).format(amount);
+            }
+        }
+
+        // Initialize the application
+        const app = new StockPortfolio();
+    </script>
+</body>
+</html>
