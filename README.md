@@ -159,4 +159,4 @@ docker run -d -e API_KEY=$API_KEY -p 8080:8080 <dockerhub-username>/stock-tracke
 ✅ **Deployment** – Docker + multi-server with load balancer  
 ✅ **User Experience** – simple UI + data interaction  
 ✅ **Documentation** – complete setup, deployment, API credit  
-✅ **Demo Video** – to be linked  
+✅ **Demo Video** – refer to the above link 
